@@ -9,17 +9,20 @@ import (
 func (s *Store) loadFile() ([]byte, error) {
 	data, err := os.ReadFile(s.path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("store file not found. Run 'cdbm init' to set up the application")
+		}
+		return nil, fmt.Errorf("failed to read store file: %w", err)
 	}
 	return data, nil
 }
 
-func (s *Store) writeFile(path string, data []byte) error {
+func (s *Store) writeFile() error {
 	bytes, err := json.Marshal(s.bookmarks)
 	if err != nil {
 		return fmt.Errorf("failed to marshal bookmarks: %w", err)
 	}
-	err = os.WriteFile(s.path, bytes, 0o644)
+	err = os.WriteFile(s.path, bytes, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}

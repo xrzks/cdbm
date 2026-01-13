@@ -1,18 +1,1 @@
-[
-  {
-    "name": "home",
-    "directory": "/Users/simon"
-  },
-  {
-    "name": "projects",
-    "directory": "/Users/simon/dev/projects"
-  },
-  {
-    "name": "private",
-    "directory": "/Users/simon/dev/private"
-  },
-  {
-    "name": "work",
-    "directory": "/Users/simon/work"
-  }
-]
+{"evil":{"Name":"evil","Directory":"/tmp/testVULNERABLE"},"hi":{"Name":"hi","Directory":"hello"},"home":{"Name":"home","Directory":"/Users/simon"},"private":{"Name":"private","Directory":"/Users/simon/dev/private"},"projects":{"Name":"projects","Directory":"/Users/simon/dev/projects"},"sigma":{"Name":"sigma","Directory":"/Users/simon/dev/private/cdbm"},"test":{"Name":"test","Directory":"/tmp/testpwned"},"work":{"Name":"work","Directory":"/Users/simon/work"}}

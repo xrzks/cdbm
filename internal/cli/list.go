@@ -18,7 +18,7 @@ func (c *CLI) NewListCommand() *cli.Command {
 func (c *CLI) RunListCommand(ctx context.Context, cli *cli.Command) error {
 	bookmarks := c.store.GetAll()
 	for _, bookmark := range bookmarks {
-		fmt.Println("---")
+		fmt.Println()
 		bookmark.Pretty()
 	}
 	return nil

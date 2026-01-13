@@ -1,6 +1,9 @@
 package store
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 type Bookmark struct {
 	Name      string
@@ -13,5 +16,5 @@ func (b *Bookmark) Pretty() {
 		return
 	}
 	fmt.Printf("%-15s %s\n", "Name:", b.Name)
-	fmt.Printf("%-15s %s\n", "Directory:", b.Directory)
+	fmt.Printf("%-15s %s\n", "Directory:", filepath.Base(b.Directory))
 }
