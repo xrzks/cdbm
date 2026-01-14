@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/golang/go)](https://goreportcard.com/report/github.com/golang/go)
+
 # cdbm - **C**hange **D**irectory to **B**ook**M**ark
 
 CLI tool for managing directory bookmarks.
