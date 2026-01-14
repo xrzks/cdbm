@@ -14,7 +14,7 @@ func (c *CLI) NewListCommand() *cli.Command {
 	}
 }
 
-func (c *CLI) RunListCommand(ctx context.Context, cli *cli.Command) error {
+func (c *CLI) RunListCommand(ctx context.Context, cmd *cli.Command) error {
 	bookmarks := c.store.GetAll()
 	for _, bookmark := range bookmarks {
 		bookmark.Pretty()

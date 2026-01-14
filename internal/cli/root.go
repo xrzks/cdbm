@@ -19,6 +19,8 @@ func New(s *store.Store) *cli.Command {
 			c.NewAddCommand(),
 			c.NewListCommand(),
 			c.NewInitCommand(),
+			c.NewEditCommand(),
+			c.NewDeleteCommand(),
 		},
 		Action: c.RunCdCommand,
 	}

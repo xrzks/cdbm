@@ -40,6 +40,31 @@ func validateBookmarkName(name string) error {
 	return nil
 }
 
+func validateDirectory(directory string) (string, error) {
+	absPath, err := filepath.Abs(directory)
+	if err != nil {
+		return "", fmt.Errorf("invalid directory path: %w", err)
+	}
+
+	// check if its a symlink
+	fileInfo, err := os.Lstat(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("directory '%v' does not exist", directory)
+		}
+		return "", fmt.Errorf("failed to access directory: %w", err)
+	}
+
+	if fileInfo.Mode()&os.ModeSymlink != 0 {
+		return "", fmt.Errorf("symlinks are not allowed for security reasons")
+	}
+	if !fileInfo.IsDir() {
+		return "", fmt.Errorf("path is not a directory")
+	}
+
+	return absPath, nil
+}
+
 func (s *Store) GetOne(name string) (*Bookmark, error) {
 	if err := validateBookmarkName(name); err != nil {
 		return nil, err
@@ -61,26 +86,9 @@ func (s *Store) Add(name string, directory string) error {
 		return fmt.Errorf("bookmark '%s' already exists. Use a different name", name)
 	}
 
-	absPath, err := filepath.Abs(directory)
+	absPath, err := validateDirectory(directory)
 	if err != nil {
-		return fmt.Errorf("invalid directory path: %w", err)
-	}
-
-	// Use Lstat to check for symlinks without following them (prevents TOCTOU attacks)
-	fileInfo, err := os.Lstat(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("directory '%v' does not exist", directory)
-		}
-		return fmt.Errorf("failed to access directory: %w", err)
-	}
-
-	// Check if it's a symlink first (redundant with Lstat but explicit for clarity)
-	if fileInfo.Mode()&os.ModeSymlink != 0 {
-		return fmt.Errorf("symlinks are not allowed for security reasons")
-	}
-	if !fileInfo.IsDir() {
-		return fmt.Errorf("path is not a directory")
+		return err
 	}
 
 	bm := &Bookmark{
@@ -97,6 +105,58 @@ func (s *Store) GetAll() []*Bookmark {
 		list = append(list, bm)
 	}
 	return list
+}
+
+func (s *Store) Delete(name string) error {
+	_, err := s.GetOne(name)
+	if err != nil {
+		return err
+	}
+	delete(s.bookmarks, name)
+	return s.writeFile()
+}
+
+func (s *Store) Edit(name string, newName string, newDirectory string) error {
+	bm, err := s.GetOne(name)
+	if err != nil {
+		return err
+	}
+
+	// Determine final name
+	finalName := name
+	if newName != "" {
+		if err := validateBookmarkName(newName); err != nil {
+			return err
+		}
+		if newName != name {
+			if _, exists := s.bookmarks[newName]; exists {
+				return fmt.Errorf("bookmark '%s' already exists. Use a different name", newName)
+			}
+			finalName = newName
+		}
+	}
+
+	// Determine final directory
+	finalDirectory := bm.Directory
+	if newDirectory != "" {
+		absPath, err := validateDirectory(newDirectory)
+		if err != nil {
+			return err
+		}
+		finalDirectory = absPath
+	}
+
+	// Update the bookmark
+	bm.Name = finalName
+	bm.Directory = finalDirectory
+
+	// If name changed, delete old entry and add new one
+	if finalName != name {
+		delete(s.bookmarks, name)
+		s.bookmarks[finalName] = bm
+	}
+
+	return s.writeFile()
 }
 
 func (s *Store) initBookmarks() error {
