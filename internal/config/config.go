@@ -38,6 +38,12 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
+	cfg.StorePath = expandPath(cfg.StorePath)
+
+	if cfg.StorePath == "" {
+		return nil, fmt.Errorf("config field 'store_path' is empty or missing. Please set a valid store path in %s", filepath.Join(configPath, defaultConfigFile))
+	}
+
 	return cfg, nil
 }
 
@@ -50,4 +56,19 @@ func getConfigPath() (string, error) {
 		return "", err
 	}
 	return filepath.Join(homeDir, ".config", "cdbm"), nil
+}
+
+func expandPath(path string) string {
+	expanded := os.ExpandEnv(path)
+
+	if len(expanded) > 0 && expanded[0] == '~' {
+		homeDir, err := os.UserHomeDir()
+		if err == nil {
+			if len(expanded) == 1 || expanded[1] == '/' {
+				expanded = filepath.Join(homeDir, expanded[1:])
+			}
+		}
+	}
+
+	return expanded
 }

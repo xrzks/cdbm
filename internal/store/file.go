@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func (s *Store) loadFile() ([]byte, error) {
 	data, err := os.ReadFile(s.path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("store file not found. Run 'cdbm init' to set up the application")
+			return []byte("{}"), nil
 		}
 		return nil, fmt.Errorf("failed to read store file: %w", err)
 	}
@@ -18,6 +19,11 @@ func (s *Store) loadFile() ([]byte, error) {
 }
 
 func (s *Store) writeFile() error {
+	dir := filepath.Dir(s.path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
 	bytes, err := json.Marshal(s.bookmarks)
 	if err != nil {
 		return fmt.Errorf("failed to marshal bookmarks: %w", err)
