@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultConfigFile = ".cdbm.json"
-	defaultStoreFile  = "store"
+	defaultStoreFile  = "store.json"
 )
 
 type Config struct {

@@ -13,7 +13,7 @@ import (
 func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 	firstArg := cmd.Args().Get(0)
 	if firstArg == "" {
-		fmt.Println(cli.ShowAppHelp(cmd))
+		cli.ShowRootCommandHelpAndExit(cmd, 1)
 		return nil
 	}
 	bookmark, err := c.store.GetOne(firstArg)

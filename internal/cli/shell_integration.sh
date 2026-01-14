@@ -1,7 +1,10 @@
 cdbm() {
-  if [[ "$1" == "add" ]] || [[ "$1" == "list" ]]; then
+  case "$1" in
+  add | list | remove | update | help | "")
     command cdbm "$@"
-  else
+    ;;
+  *)
     eval "$(command cdbm "$1")"
-  fi
+    ;;
+  esac
 }
