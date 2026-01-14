@@ -1,14 +1,16 @@
-# cdbm
+# cdbm - **C**hange **D**irectory to **B**ook**M**ark
 
-A CLI tool for managing directory bookmarks.
+CLI tool for managing directory bookmarks.
 
 ## Installation
+
+Requires Go 1.25.5 or later.
 
 ```bash
 go install github.com/xrzks/cdbm@latest
 ```
 
-Add this line to your shell config (usually ~/.bashrc or ~/.zshrc)
+Add this line to your shell config (usually ~/.bashrc or ~/.zshrc):
 
 ```bash
 eval "$(cdbm init zsh)"
@@ -20,18 +22,19 @@ eval "$(cdbm init bash)"
 
 ```bash
 # add a bookmark
-cdbm add --name <name> --directory <path>
+cdbm add --name projects --directory ~/dev/projects
 
 # list bookmarks
 cdbm list
 
 # navigate to a bookmark
-cdbm <name>
+cdbm projects
 ```
+
+**Bookmark names**: Only letters, numbers, `.`, `_`, and `-` (max 100 chars).
 
 ## Configuration
 
-cdbm stores configuration in `~/.config/cdbm/.cdbm.json` (respects `$XDG_CONFIG_HOME`).
+Store file created at `~/.config/cdbm/store.json` on first `cdbm add`.
 
-The default configuration creates a store file at `~/.config/cdbm/store`. You can customize the store location by
-setting `store_path` in the config file.
+Config file: `~/.config/cdbm/.cdbm.json` (respects `$XDG_CONFIG_HOME`). Customize `store_path` there.
