@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang/go)](https://goreportcard.com/report/github.com/golang/go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/xrzks/cdbm)](https://goreportcard.com/report/github.com/xrzks/cdbm)
 
 # cdbm - **C**hange **D**irectory to **B**ook**M**ark
 
