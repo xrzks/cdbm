@@ -15,11 +15,11 @@ func (c *CLI) NewInitCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "init",
 		Usage:  "generate shell initialization code",
-		Action: runIinitCommand,
+		Action: runInitCommand,
 	}
 }
 
-func runIinitCommand(ctx context.Context, cmd *cli.Command) error {
+func runInitCommand(ctx context.Context, cmd *cli.Command) error {
 	shell := cmd.Args().Get(0)
 	err := installShellIntegration(shell)
 	if err != nil {
