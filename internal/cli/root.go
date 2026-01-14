@@ -1,12 +1,6 @@
 package cli
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/urfave/cli/v3"
 	"github.com/xrzks/cdbm/internal/store"
 )
@@ -26,47 +20,6 @@ func New(s *store.Store) *cli.Command {
 			c.NewListCommand(),
 			c.NewInitCommand(),
 		},
-		Action: c.RunRootCommand,
+		Action: c.RunCdCommand,
 	}
-}
-
-func (c *CLI) RunRootCommand(ctx context.Context, cmd *cli.Command) error {
-	firstArg := cmd.Args().Get(0)
-	if firstArg == "" {
-		fmt.Println(cli.ShowAppHelp(cmd))
-		return nil
-	}
-	bookmark, err := c.store.GetOne(firstArg)
-	if err != nil {
-		return err
-	}
-
-	abs, err := filepath.Abs(bookmark.Directory)
-	if err != nil {
-		return fmt.Errorf("invalid path: %w", err)
-	}
-
-	cleanedPath := filepath.Clean(abs)
-
-	fileInfo, err := os.Lstat(cleanedPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("bookmark directory no longer exists")
-		}
-		return fmt.Errorf("failed to access directory: %w", err)
-	}
-
-	if fileInfo.Mode()&os.ModeSymlink != 0 {
-		return fmt.Errorf("security violation: path is a symlink")
-	}
-	if !fileInfo.IsDir() {
-		return fmt.Errorf("path is not a directory")
-	}
-
-	fmt.Printf("cd %s", shellQuote(cleanedPath))
-	return nil
-}
-
-func shellQuote(s string) string {
-	return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'"
 }
