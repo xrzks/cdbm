@@ -43,16 +43,18 @@ cdbm/
 ├── internal/
 │   ├── cli/                 # CLI commands and logic
 │   │   ├── add.go           # Add bookmark command
+│   │   ├── cd.go            # CD navigation command (root action)
 │   │   ├── init.go          # Shell initialization command
 │   │   ├── list.go          # List bookmarks command
-│   │   ├── root.go          # Root command (navigation)
-│   │   └── root_test.go     # Tests for shell quoting
+│   │   ├── root.go          # Root command setup
+│   │   ├── root_test.go     # Tests for shell quoting
+│   │   └── shell_integration.sh # Embedded shell function
+│   ├── config/              # Configuration management
+│   │   └── config.go        # Config loading and path resolution
 │   └── store/               # Data persistence
 │       ├── bookmark.go      # Bookmark struct and pretty printing
 │       ├── file.go          # File I/O operations
 │       └── store.go         # Store logic and validation
-├── main.go                  # Symlink to cmd/cdbm/main.go
-├── store                    # JSON storage file (created at runtime)
 ├── go.mod
 └── go.sum
 ```
@@ -60,14 +62,16 @@ cdbm/
 ## Code Organization
 
 ### Package Structure
-- **`cmd/cdbm`**: Application entry point - initializes store and runs CLI
+- **`cmd/cdbm`**: Application entry point - loads config, initializes store, runs CLI
 - **`internal/cli`**: Command definitions and handlers using urfave/cli/v3
+- **`internal/config`**: Configuration file loading with XDG config support
 - **`internal/store`**: Bookmark data persistence with validation
 
 ### Key Types
 - `CLI` (cli package): Main CLI struct holding store reference
 - `Store` (store package): In-memory bookmark map with file persistence
 - `Bookmark` (store package): Data model with Name and Directory fields
+- `Config` (config package): Configuration struct with StorePath field
 
 ### Command Pattern
 Commands follow this pattern:
@@ -96,7 +100,7 @@ func (c *CLI) Run<Command>Command(ctx context.Context, cmd *cli.Command) error {
 
 ### File Naming
 - Files match the primary type or functionality they contain
-- Command files: `add.go`, `list.go`, `init.go`
+- Command files: `add.go`, `list.go`, `cd.go`, `init.go`
 - Test files: `<name>_test.go` in same package
 
 ## Code Style Patterns
@@ -119,16 +123,17 @@ func (c *CLI) Run<Command>Command(ctx context.Context, cmd *cli.Command) error {
 
 **Symlink Protection**:
 - Uses `os.Lstat()` instead of `os.Stat()` to check for symlinks without following them
-- Rejects symlinks in both `Add()` and `RunRootCommand()`
+- Rejects symlinks in both `Add()` and `RunCdCommand()`
 - Prevents TOCTOU (Time-of-Check-Time-of-Use) attacks
 
-**Shell Output Quoting** (root.go:70-72):
-- Single quotes with proper escaping: `"' + strings.ReplaceAll(s, "'", "'\\''") + "'"`
+**Shell Output Quoting** (cd.go:50-52):
+- Single quotes with proper escaping: `' + strings.ReplaceAll(s, "'", "'\\''") + "'`
 - Prevents shell injection attacks
 - Comprehensive test coverage in `root_test.go`
 
 **File Permissions**:
 - Store file written with `0o600` (read/write owner only)
+- Config directories created with `0o755`
 - Prevents information leakage
 
 ### File I/O Pattern
@@ -146,6 +151,18 @@ if err != nil {
 err = os.WriteFile(path, data, 0o600)
 ```
 
+### Configuration Loading Pattern
+Config loading uses lazy evaluation - if config file doesn't exist, returns defaults:
+```go
+data, err := os.ReadFile(configPath)
+if err != nil {
+    if os.IsNotExist(err) {
+        return defaultConfig, nil
+    }
+    return nil, fmt.Errorf("failed to read config: %w", err)
+}
+```
+
 ## Testing Approach
 
 ### Test Location
@@ -155,6 +172,7 @@ err = os.WriteFile(path, data, 0o600)
 ### Current Test Coverage
 - Only `internal/cli` package has tests (shell quoting safety)
 - Security-focused tests: injection prevention, unicode handling, special characters
+- No tests for store package, config package, or integration tests
 
 ### Running Tests
 ```bash
@@ -177,34 +195,37 @@ go test ./... -v
 ## Important Gotchas
 
 ### Directory Structure
-- The root `main.go` is a **symlink** to `cmd/cdbm/main.go`
-- Don't modify the symlink - edit the actual file in `cmd/cdbm/`
+- Entry point is in `cmd/cdbm/main.go`
+- No symlink at root level (unlike similar projects)
 
 ### Storage Location
-- Bookmarks stored in a file named `store` in the project root
-- Format: JSON map of bookmark name to bookmark object
-- Example structure:
-  ```json
-  {
-    "name1": {"Name":"name1","Directory":"/absolute/path"},
-    "name2": {"Name":"name2","Directory":"/another/path"}
-  }
-  ```
+- Default store location: `~/.config/cdbm/store.json` (respects `$XDG_CONFIG_HOME`)
+- Config file location: `~/.config/cdbm/.cdbm.json`
+- Store file is created on first `Add()` operation
+- Config is optional - defaults work without config file
 
 ### Store Initialization
-- Store file is created lazily on first `Add()` operation
-- If store file doesn't exist, operations fail with message: "store file not found. Run 'cdbm init' to set up the application"
-- `cdbm init` actually generates shell integration code, not the store file
+- Store returns empty map `{}` if file doesn't exist (file.go:14)
+- No explicit "store not found" error - empty map is valid
+- User can add bookmarks immediately without init
 
 ### Shell Integration
 - The `init` command outputs shell function code, not a file
-- Users eval this output in their shell config: `eval "$(cdbm init <shell>)"`
+- Shell integration is embedded via `//go:embed` directive
+- Users eval this output in their shell config: `eval "$(cdbm init zsh)"`
 - Shell function decides whether to execute commands or eval output based on first argument
+- The shell function handles: add, list, remove, update, help (runs command), all others (evals cd)
 
 ### Path Handling
 - All directory paths are converted to absolute paths with `filepath.Abs()`
 - Paths are cleaned with `filepath.Clean()`
+- Config supports `~` expansion and environment variable expansion
 - Pretty printing shows only basename of directory (bookmark.go:19)
+
+### Command Routing
+- Root command with no subcommands triggers `RunCdCommand`
+- Arguments are accessed via `cmd.Args().Get(0)`
+- Show help if no argument provided to cd command
 
 ## Dependencies
 
@@ -221,6 +242,7 @@ go test ./... -v
 - `context` - Context propagation
 - `fmt` - Formatted I/O
 - `log` - Logging (fatal errors only)
+- `embed` - Embed shell integration script
 
 ## Development Workflow
 
@@ -246,6 +268,7 @@ To add a new CLI command:
    },
    ```
 4. Add tests in `<command>_test.go` or `root_test.go`
+5. Update shell integration if command should be executed directly (vs eval'd)
 
 ## Adding New Store Operations
 
