@@ -13,11 +13,11 @@ import (
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load config\n %v", err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
 	store, err := store.NewStore(cfg.StorePath)
 	if err != nil {
-		log.Fatalf("An error has occurred during startup\n %v", err)
+		log.Fatalf("Error: %v\n", err)
 	}
 
 	app := cli.New(store)
