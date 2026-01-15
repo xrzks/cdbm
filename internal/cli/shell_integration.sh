@@ -1,6 +1,6 @@
 cdbm() {
   case "$1" in
-  add | list | delete | edit | help | "")
+  add | list | delete | edit | help | "" | -*)
     command cdbm "$@"
     ;;
   *)
