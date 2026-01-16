@@ -1,86 +1,116 @@
 # AGENTS.md
 
-This document provides essential information for working effectively in the cdbm codebase.
-
 ## Project Overview
 
-cdbm is a Go CLI tool for managing directory bookmarks. It allows users to save frequently used directories and quickly navigate to them via the command line with shell integration.
+cdbm is a Go CLI tool for managing directory bookmarks using urfave/cli/v3.
 
 **Module**: `github.com/xrzks/cdbm`
 **Go Version**: 1.25.5
-**CLI Framework**: urfave/cli v3
 
 ## Essential Commands
 
-### Build and Test
 ```bash
 # Run all tests
 go test ./...
 
+# Run tests for a specific package
+go test ./internal/cli
+
+# Run a single test
+go test ./internal/cli -run TestFunctionName
+
+# Run tests with verbosity
+go test ./... -v
+
 # Build the binary
 go build ./cmd/cdbm
 
-# Install globally (for users)
-go install github.com/xrzks/cdbm@latest
-```
-
-### Code Quality
-```bash
-# Format code (gofmt - should produce no output)
+# Format code check (should produce no output)
 gofmt -l .
 
 # Run vet
 go vet ./...
+
+# Install globally
+go install github.com/xrzks/cdbm@latest
 ```
 
-## Project Structure
+## Code Style Guidelines
 
-```
-cdbm/
-├── cmd/
-│   └── cdbm/
-│       └── main.go          # Application entry point
-├── internal/
-│   ├── cli/                 # CLI commands and logic
-│   │   ├── add.go           # Add bookmark command
-│   │   ├── cd.go            # CD navigation command (root action)
-│   │   ├── init.go          # Shell initialization command
-│   │   ├── list.go          # List bookmarks command
-│   │   ├── root.go          # Root command setup
-│   │   ├── root_test.go     # Tests for shell quoting
-│   │   └── shell_integration.sh # Embedded shell function
-│   ├── config/              # Configuration management
-│   │   └── config.go        # Config loading and path resolution
-│   └── store/               # Data persistence
-│       ├── bookmark.go      # Bookmark struct and pretty printing
-│       ├── file.go          # File I/O operations
-│       └── store.go         # Store logic and validation
-├── go.mod
-└── go.sum
+### Import Ordering
+Imports are grouped with blank lines between groups:
+1. Standard library (alphabetical order)
+2. Third-party packages (alphabetical order)
+3. Internal packages (github.com/xrzks/cdbm/...)
+
+Example:
+```go
+package store
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/urfave/cli/v3"
+	"github.com/xrzks/cdbm/internal/config"
+)
 ```
 
-## Code Organization
+### Naming Conventions
+- **Exported**: PascalCase (e.g., `NewStore`, `GetOne`, `Bookmark`)
+- **Private**: camelCase (e.g., `loadFile`, `bookmarks`)
+- **Constants**: PascalCase (e.g., `MaxNameLength`)
+- **Interfaces**: PascalCase with -er suffix
+- **File names**: Match primary functionality, test files as `<name>_test.go`
 
-### Package Structure
-- **`cmd/cdbm`**: Application entry point - loads config, initializes store, runs CLI
-- **`internal/cli`**: Command definitions and handlers using urfave/cli/v3
-- **`internal/config`**: Configuration file loading with XDG config support
-- **`internal/store`**: Bookmark data persistence with validation
+### Types and Structs
+- Exported struct types use PascalCase
+- Private struct fields use camelCase
+- Constructor functions: `New<TypeName()`
+- Receiver names are short abbreviations (s, c, bm)
 
-### Key Types
-- `CLI` (cli package): Main CLI struct holding store reference
-- `Store` (store package): In-memory bookmark map with file persistence
-- `Bookmark` (store package): Data model with Name and Directory fields
-- `Config` (config package): Configuration struct with StorePath field
+### Error Handling
+- Always return errors, never ignore them
+- Use `fmt.Errorf` with `%w` verb for error wrapping
+- Provide context-specific error messages
+- Check `os.IsNotExist()` for missing files, return defaults when appropriate
 
-### Command Pattern
-Commands follow this pattern:
+```go
+if err != nil {
+    return fmt.Errorf("failed to read config: %w", err)
+}
+```
+
+### Security Requirements
+- Use `os.Lstat()` (not `os.Stat()`) to detect symlinks
+- Validate bookmark names with regex `^[a-zA-Z0-9._-]+$` (max 100 chars)
+- Shell quoting: `' + strings.ReplaceAll(s, "'", "'\\''") + "'`
+- Write sensitive files with `0o600` permissions
+- All directory paths must be absolute (use `filepath.Abs()`)
+- Paths must be cleaned with `filepath.Clean()`
+
+### File I/O Pattern
+```go
+// Reading
+data, err := os.ReadFile(path)
+if err != nil {
+    if os.IsNotExist(err) {
+        return defaultConfig, nil  // or specific error
+    }
+    return nil, fmt.Errorf("failed to read: %w", err)
+}
+
+// Writing
+err = os.WriteFile(path, data, 0o600)
+```
+
+### Command Pattern (CLI)
 ```go
 func (c *CLI) New<Command>Command() *cli.Command {
     return &cli.Command{
         Name:   "command-name",
         Usage:  "description",
-        Flags:  []cli.Flag{...},
         Action: c.Run<Command>Command,
     }
 }
@@ -90,198 +120,30 @@ func (c *CLI) Run<Command>Command(ctx context.Context, cmd *cli.Command) error {
 }
 ```
 
-## Naming Conventions
+## Project Structure
 
-### Go Conventions
-- **Exported**: PascalCase (e.g., `NewStore`, `GetOne`, `Bookmark`)
-- **Private**: camelCase (e.g., `loadFile`, `writeFile`, `bookmarks`)
-- **Constants**: PascalCase
-- **Interfaces**: PascalCase with -er suffix (not currently used in codebase)
-
-### File Naming
-- Files match the primary type or functionality they contain
-- Command files: `add.go`, `list.go`, `cd.go`, `init.go`
-- Test files: `<name>_test.go` in same package
-
-## Code Style Patterns
-
-### Error Handling
-- Always return errors, never ignore them
-- Use `fmt.Errorf` with `%w` verb for error wrapping
-- Provide context-specific error messages
-- Example:
-  ```go
-  return fmt.Errorf("failed to marshal bookmarks: %w", err)
-  ```
-
-### Security Considerations
-
-**Bookmark Name Validation** (store.go:29-41):
-- Regex: `^[a-zA-Z0-9._-]+$`
-- Max length: 100 characters
-- Cannot be empty
-
-**Symlink Protection**:
-- Uses `os.Lstat()` instead of `os.Stat()` to check for symlinks without following them
-- Rejects symlinks in both `Add()` and `RunCdCommand()`
-- Prevents TOCTOU (Time-of-Check-Time-of-Use) attacks
-
-**Shell Output Quoting** (cd.go:50-52):
-- Single quotes with proper escaping: `' + strings.ReplaceAll(s, "'", "'\\''") + "'`
-- Prevents shell injection attacks
-- Comprehensive test coverage in `root_test.go`
-
-**File Permissions**:
-- Store file written with `0o600` (read/write owner only)
-- Config directories created with `0o755`
-- Prevents information leakage
-
-### File I/O Pattern
-```go
-// Reading
-data, err := os.ReadFile(path)
-if err != nil {
-    if os.IsNotExist(err) {
-        return nil, fmt.Errorf("specific message")
-    }
-    return nil, fmt.Errorf("generic error: %w", err)
-}
-
-// Writing
-err = os.WriteFile(path, data, 0o600)
+```
+cdbm/
+├── cmd/cdbm/main.go         # Entry point
+├── internal/
+│   ├── cli/                 # CLI commands
+│   ├── config/              # Config loading
+│   └── store/               # Data persistence
+└── go.mod
 ```
 
-### Configuration Loading Pattern
-Config loading uses lazy evaluation - if config file doesn't exist, returns defaults:
-```go
-data, err := os.ReadFile(configPath)
-if err != nil {
-    if os.IsNotExist(err) {
-        return defaultConfig, nil
-    }
-    return nil, fmt.Errorf("failed to read config: %w", err)
-}
-```
+## Important Notes
 
-## Testing Approach
-
-### Test Location
-- Tests are co-located with source files in same package
-- Example: `internal/cli/root_test.go`
-
-### Current Test Coverage
-- Only `internal/cli` package has tests (shell quoting safety)
-- Security-focused tests: injection prevention, unicode handling, special characters
-- No tests for store package, config package, or integration tests
-
-### Running Tests
-```bash
-# All tests
-go test ./...
-
-# Specific package
-go test ./internal/cli
-
-# With verbosity
-go test ./... -v
-```
-
-### Test Patterns
-- Table-driven tests for multiple scenarios
-- Test names describe the scenario
-- Test both happy path and edge cases
-- Security tests verify invariants (e.g., "shell injection should be prevented")
-
-## Important Gotchas
-
-### Directory Structure
-- Entry point is in `cmd/cdbm/main.go`
-- No symlink at root level (unlike similar projects)
-
-### Storage Location
-- Default store location: `~/.config/cdbm/store.json` (respects `$XDG_CONFIG_HOME`)
-- Config file location: `~/.config/cdbm/.cdbm.json`
-- Store file is created on first `Add()` operation
+- Store returns empty map `{}` if file doesn't exist (not an error)
 - Config is optional - defaults work without config file
-
-### Store Initialization
-- Store returns empty map `{}` if file doesn't exist (file.go:14)
-- No explicit "store not found" error - empty map is valid
-- User can add bookmarks immediately without init
-
-### Shell Integration
-- The `init` command outputs shell function code, not a file
-- Shell integration is embedded via `//go:embed` directive
-- Users eval this output in their shell config: `eval "$(cdbm init zsh)"`
-- Shell function decides whether to execute commands or eval output based on first argument
-- The shell function handles: add, list, remove, update, help (runs command), all others (evals cd)
-
-### Path Handling
-- All directory paths are converted to absolute paths with `filepath.Abs()`
-- Paths are cleaned with `filepath.Clean()`
-- Config supports `~` expansion and environment variable expansion
-- Pretty printing shows only basename of directory (bookmark.go:19)
-
-### Command Routing
-- Root command with no subcommands triggers `RunCdCommand`
-- Arguments are accessed via `cmd.Args().Get(0)`
-- Show help if no argument provided to cd command
-
-## Dependencies
-
-### Runtime
-- `github.com/urfave/cli/v3` v3.6.1 - CLI framework
-
-### Standard Library
-- `encoding/json` - Store file serialization
-- `os` - File I/O, path operations
-- `path/filepath` - Path manipulation
-- `regexp` - Bookmark name validation
-- `strings` - String manipulation
-- `testing` - Unit tests
-- `context` - Context propagation
-- `fmt` - Formatted I/O
-- `log` - Logging (fatal errors only)
-- `embed` - Embed shell integration script
+- Entry point: `cmd/cdbm/main.go`
+- Default store: `~/.config/cdbm/store.json`
+- Module import: `github.com/xrzks/cdbm/internal/...`
 
 ## Development Workflow
 
-1. Make changes to source files
+1. Make changes
 2. Run tests: `go test ./...`
-3. Run format check: `gofmt -l .`
+3. Format check: `gofmt -l .`
 4. Run vet: `go vet ./...`
-5. Build binary to verify: `go build ./cmd/cdbm`
-
-## Adding New Commands
-
-To add a new CLI command:
-
-1. Create `<command>.go` in `internal/cli/`
-2. Implement `New<Command>Command()` and `Run<Command>Command()` methods
-3. Register in `root.go` Commands list:
-   ```go
-   Commands: []*cli.Command{
-       c.NewAddCommand(),
-       c.NewListCommand(),
-       c.NewInitCommand(),
-       c.New<Command>Command(),  // Add here
-   },
-   ```
-4. Add tests in `<command>_test.go` or `root_test.go`
-5. Update shell integration if command should be executed directly (vs eval'd)
-
-## Adding New Store Operations
-
-To add new store operations:
-
-1. Implement method in `internal/store/store.go`
-2. Validate bookmark names using `validateBookmarkName()`
-3. Apply security checks (no symlinks, paths must exist)
-4. Persist changes with `writeFile()` after modifications
-5. Consider adding tests in `store_test.go`
-
-## Module Information
-
-- **Module Path**: `github.com/xrzks/cdbm`
-- **Import Path**: Use `github.com/xrzks/cdbm/internal/...` for internal packages
-- **Version**: Latest
+5. Build: `go build ./cmd/cdbm`
