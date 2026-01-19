@@ -2,6 +2,8 @@ package store
 
 import (
 	"fmt"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 type Bookmark struct {
@@ -9,12 +11,20 @@ type Bookmark struct {
 	Directory string
 }
 
+var (
+	nameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Bold(true)
+	pathStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	separator = lipgloss.NewStyle().Foreground(lipgloss.Color("245")).Render("→")
+	nilStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+)
+
 func (b *Bookmark) Pretty() {
 	if b == nil {
-		fmt.Println("<nil Bookmark>")
+		fmt.Println(nilStyle.Render("<nil Bookmark>"))
 		return
 	}
-	fmt.Printf("%-15s %s\n", "Name:", b.Name)
-	fmt.Printf("%-15s %s\n", "Directory:", b.Directory)
-	fmt.Println()
+
+	name := nameStyle.Render(b.Name)
+	directory := pathStyle.Render(b.Directory)
+	fmt.Printf("%s %s %s\n", name, separator, directory)
 }
