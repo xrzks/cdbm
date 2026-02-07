@@ -21,12 +21,7 @@ func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	abs, err := filepath.Abs(bookmark.Directory)
-	if err != nil {
-		return fmt.Errorf("invalid path: %w", err)
-	}
-
-	cleanedPath := filepath.Clean(abs)
+	cleanedPath := filepath.Clean(bookmark.Directory)
 
 	fileInfo, err := os.Lstat(cleanedPath)
 	if err != nil {
