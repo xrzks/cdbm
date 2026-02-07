@@ -11,11 +11,18 @@ type Bookmark struct {
 	Directory string
 }
 
+const (
+	ColorCyan  = "6"
+	ColorGreen = "10"
+	ColorGray  = "245"
+	ColorRed   = "1"
+)
+
 var (
-	nameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Bold(true)
-	pathStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
-	separator = lipgloss.NewStyle().Foreground(lipgloss.Color("245")).Render("→")
-	nilStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+	nameStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorCyan)).Bold(true)
+	pathStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorGreen))
+	separator = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorGray)).Render("→")
+	nilStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorRed))
 )
 
 func (b *Bookmark) Pretty() string {
