@@ -13,12 +13,14 @@ func (c *CLI) NewEditCommand() *cli.Command {
 		Usage: "edit an existing bookmark (rename or move)",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "newName",
-				Usage: "the new name of the bookmark",
+				Name:    "newName",
+				Aliases: []string{"n"},
+				Usage:   "the new name of the bookmark",
 			},
 			&cli.StringFlag{
-				Name:  "newDirectory",
-				Usage: "the new bookmarked directory",
+				Name:    "newDirectory",
+				Aliases: []string{"d"},
+				Usage:   "the new bookmarked directory",
 			},
 		},
 		Action: c.RunEditCommand,

@@ -13,11 +13,13 @@ func (c *CLI) NewAddCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "name",
+				Aliases:  []string{"n"},
 				Usage:    "the name of the bookmark",
 				Required: true,
 			},
 			&cli.StringFlag{
 				Name:     "directory",
+				Aliases:  []string{"d"},
 				Usage:    "the bookmarked directory",
 				Required: true,
 			},
