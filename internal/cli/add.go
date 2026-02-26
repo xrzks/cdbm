@@ -28,8 +28,8 @@ func (c *CLI) NewAddCommand() *cli.Command {
 	}
 }
 
-func (c *CLI) RunAddCommand(ctx context.Context, cli *cli.Command) error {
-	directory := cli.String("directory")
-	name := cli.String("name")
+func (c *CLI) RunAddCommand(ctx context.Context, cmd *cli.Command) error {
+	directory := cmd.String("directory")
+	name := cmd.String("name")
 	return c.store.Add(name, directory)
 }

@@ -12,9 +12,10 @@ type CLI struct {
 func New(s *store.Store) *cli.Command {
 	c := &CLI{store: s}
 	return &cli.Command{
-		Name:    "cdbm",
-		Usage:   "cdbm",
-		Aliases: []string{"a"},
+		Name:                  "cdbm",
+		Usage:                 "Manage directory bookmarks",
+		Aliases:               []string{"a"},
+		EnableShellCompletion: true,
 		Commands: []*cli.Command{
 			c.NewAddCommand(),
 			c.NewListCommand(),

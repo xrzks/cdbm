@@ -1,0 +1,4 @@
+cdbm
+*.test
+*.out
+go.work

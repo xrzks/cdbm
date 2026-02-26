@@ -23,7 +23,7 @@ go test ./internal/cli -run TestFunctionName
 go test ./... -v
 
 # Build the binary
-go build ./cmd/cdbm
+go build .
 
 # Format code check (should produce no output)
 gofmt -l .
@@ -124,9 +124,9 @@ func (c *CLI) Run<Command>Command(ctx context.Context, cmd *cli.Command) error {
 
 ```
 cdbm/
-├── cmd/cdbm/main.go         # Entry point
+├── main.go                  # Entry point
 ├── internal/
-│   ├── cli/                 # CLI commands
+│   ├── cli/                 # CLI commands (add, list, init, edit, delete, cd)
 │   ├── config/              # Config loading
 │   └── store/               # Data persistence
 └── go.mod
@@ -136,7 +136,7 @@ cdbm/
 
 - Store returns empty map `{}` if file doesn't exist (not an error)
 - Config is optional - defaults work without config file
-- Entry point: `cmd/cdbm/main.go`
+- Entry point: `main.go`
 - Default store: `~/.config/cdbm/store.json`
 - Module import: `github.com/xrzks/cdbm/internal/...`
 
@@ -146,4 +146,4 @@ cdbm/
 2. Run tests: `go test ./...`
 3. Format check: `gofmt -l .`
 4. Run vet: `go vet ./...`
-5. Build: `go build ./cmd/cdbm`
+5. Build: `go build .`

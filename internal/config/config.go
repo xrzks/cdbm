@@ -38,7 +38,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	cfg.StorePath = expandPath(cfg.StorePath)
+	cfg.StorePath = filepath.Clean(expandPath(cfg.StorePath))
 
 	if cfg.StorePath == "" {
 		return nil, fmt.Errorf("config field 'store_path' is empty or missing. Please set a valid store path in %s", filepath.Join(configPath, defaultConfigFile))
