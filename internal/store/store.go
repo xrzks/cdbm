@@ -17,7 +17,7 @@ type StoreInterface interface {
 	Edit(name string, newName string, newDirectory string) error
 }
 
-var bookmarkNameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+var BookmarkNameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
 type Store struct {
 	bookmarks map[string]*Bookmark
@@ -50,7 +50,7 @@ func validateBookmarkName(name string) error {
 	if len(name) > 100 {
 		return fmt.Errorf("bookmark name too long (max 100 characters)")
 	}
-	if !bookmarkNameRegex.MatchString(name) {
+	if !BookmarkNameRegex.MatchString(name) {
 		return fmt.Errorf("bookmark name contains invalid characters (only letters, numbers, ., _, and - allowed)")
 	}
 	return nil

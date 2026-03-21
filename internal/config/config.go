@@ -72,3 +72,14 @@ func expandPath(path string) string {
 
 	return expanded
 }
+
+func GetStatePath() (string, error) {
+	if stateDir := os.Getenv("XDG_STATE_HOME"); stateDir != "" {
+		return filepath.Join(stateDir, "cdbm"), nil
+	}
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".local", "state", "cdbm"), nil
+}

@@ -1,12 +1,20 @@
 package cli
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/urfave/cli/v3"
+	"github.com/xrzks/cdbm/internal/config"
+	"github.com/xrzks/cdbm/internal/logger"
 	"github.com/xrzks/cdbm/internal/store"
 )
 
 type CLI struct {
-	store *store.Store
+	store  *store.Store
+	logger logger.Logger
 }
 
 func New(s *store.Store) *cli.Command {
@@ -16,6 +24,15 @@ func New(s *store.Store) *cli.Command {
 		Usage:                 "Manage directory bookmarks",
 		Aliases:               []string{"a"},
 		EnableShellCompletion: true,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "debug",
+				Aliases: []string{"D"},
+				Usage:   "enable debug logging to ~/.local/state/cdbm/logs.jsonl",
+			},
+		},
+		Before: c.setupLogger,
+		After:  c.closeLogger,
 		Commands: []*cli.Command{
 			c.NewAddCommand(),
 			c.NewListCommand(),
@@ -24,5 +41,38 @@ func New(s *store.Store) *cli.Command {
 			c.NewDeleteCommand(),
 		},
 		Action: c.RunCdCommand,
+	}
+}
+
+func (c *CLI) setupLogger(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+	if cmd.Bool("debug") {
+		statePath, err := config.GetStatePath()
+		if err != nil {
+			return ctx, fmt.Errorf("failed to get state path: %w", err)
+		}
+		logPath := filepath.Join(statePath, "logs.jsonl")
+		lgr, err := logger.NewFileLogger(logPath)
+		if err != nil {
+			return ctx, fmt.Errorf("failed to create logger: %w", err)
+		}
+		c.logger = lgr
+	}
+	return ctx, nil
+}
+
+func (c *CLI) closeLogger(ctx context.Context, cmd *cli.Command) error {
+	if c.logger != nil {
+		if fl, ok := c.logger.(*logger.FileLogger); ok {
+			return fl.Close()
+		}
+	}
+	return nil
+}
+
+func (c *CLI) logDebug(action string, details map[string]any) {
+	if c.logger != nil {
+		if err := c.logger.Log(action, details); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to log debug info: %v\n", err)
+		}
 	}
 }

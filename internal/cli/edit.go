@@ -39,5 +39,31 @@ func (c *CLI) RunEditCommand(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("at least one of --newName or --newDirectory must be specified")
 	}
 
-	return c.store.Edit(name, newName, newDirectory)
+	if err := c.store.Edit(name, newName, newDirectory); err != nil {
+		return err
+	}
+
+	details := map[string]any{
+		"old_name": name,
+	}
+	if newName != "" {
+		details["new_name"] = newName
+	}
+	if newDirectory != "" {
+		details["new_directory"] = newDirectory
+	}
+	c.logDebug("edit", details)
+
+	if newName != "" {
+		fmt.Printf("Edited bookmark '%s' -> name changed to '%s'\n", name, newName)
+	}
+	if newDirectory != "" {
+		if newName != "" {
+			fmt.Printf("Edited bookmark '%s' -> directory changed to %s\n", newName, newDirectory)
+		} else {
+			fmt.Printf("Edited bookmark '%s' -> directory changed to %s\n", name, newDirectory)
+		}
+	}
+
+	return nil
 }

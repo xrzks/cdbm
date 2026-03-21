@@ -20,5 +20,12 @@ func (c *CLI) RunDeleteCommand(ctx context.Context, cmd *cli.Command) error {
 	if name == "" {
 		return fmt.Errorf("no name specified")
 	}
-	return c.store.Delete(name)
+	if err := c.store.Delete(name); err != nil {
+		return err
+	}
+	c.logDebug("delete", map[string]any{
+		"name": name,
+	})
+	fmt.Printf("Deleted bookmark '%s'\n", name)
+	return nil
 }
