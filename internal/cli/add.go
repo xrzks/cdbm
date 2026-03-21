@@ -54,7 +54,7 @@ func (c *CLI) RunAddCommand(ctx context.Context, cmd *cli.Command) error {
 		name = nameFlag
 	} else {
 		name = filepath.Base(directory)
-		name = store.BookmarkNameRegex.ReplaceAllString(name, "")
+		name = store.BookmarkNameSanitizeRegex.ReplaceAllString(name, "")
 		if name == "" {
 			return fmt.Errorf("cannot generate valid name from directory: %s", directory)
 		}

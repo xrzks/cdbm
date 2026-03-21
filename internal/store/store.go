@@ -18,6 +18,7 @@ type StoreInterface interface {
 }
 
 var BookmarkNameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+var BookmarkNameSanitizeRegex = regexp.MustCompile(`[^a-zA-Z0-9._-]`)
 
 type Store struct {
 	bookmarks map[string]*Bookmark
