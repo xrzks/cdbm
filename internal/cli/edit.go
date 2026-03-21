@@ -13,12 +13,12 @@ func (c *CLI) NewEditCommand() *cli.Command {
 		Usage: "edit an existing bookmark (rename or move)",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "newName",
+				Name:    "name",
 				Aliases: []string{"n"},
 				Usage:   "the new name of the bookmark",
 			},
 			&cli.StringFlag{
-				Name:    "newDirectory",
+				Name:    "directory",
 				Aliases: []string{"d"},
 				Usage:   "the new bookmarked directory",
 			},
@@ -32,11 +32,11 @@ func (c *CLI) RunEditCommand(ctx context.Context, cmd *cli.Command) error {
 	if name == "" {
 		return fmt.Errorf("no name specified")
 	}
-	newName := cmd.String("newName")
-	newDirectory := cmd.String("newDirectory")
+	newName := cmd.String("name")
+	newDirectory := cmd.String("directory")
 
 	if newName == "" && newDirectory == "" {
-		return fmt.Errorf("at least one of --newName or --newDirectory must be specified")
+		return fmt.Errorf("at least one of --name or --directory must be specified")
 	}
 
 	if err := c.store.Edit(name, newName, newDirectory); err != nil {

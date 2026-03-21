@@ -12,7 +12,9 @@ Requires Go 1.25.5 or later.
 go install github.com/xrzks/cdbm@latest
 ```
 
-Add this line to your shell config (usually ~/.bashrc or ~/.zshrc):
+## Shell Setup
+
+Add this line to your shell config (usually `~/.bashrc`, `~/.zshrc`):
 
 ```bash
 eval "$(cdbm init zsh)"
@@ -23,20 +25,71 @@ eval "$(cdbm init bash)"
 ## Usage
 
 ```bash
-# add a bookmark
-cdbm add --name projects --directory ~/dev/projects
+# add a bookmark (current directory)
+cdbm add
 
-# list bookmarks
+# add with custom name
+cdbm add --name projects
+
+# add with custom directory
+cdbm add --name docs --directory ~/Documents/docs
+
+# list all bookmarks
 cdbm list
 
 # navigate to a bookmark
 cdbm projects
+
+# edit a bookmark (rename)
+cdbm edit projects --name my-projects
+
+# edit a bookmark (move)
+cdbm edit docs --directory ~/Documents/docs-new
+
+# edit a bookmark (rename and move)
+cdbm edit projects --name my-projects --directory ~/dev/projects-new
+
+# delete a bookmark
+cdbm delete projects
 ```
 
-**Bookmark names**: Only letters, numbers, `.`, `_`, and `-` (max 100 chars).
+## Bookmark Names
+
+Only letters, numbers, `.`, `_`, and `-` (max 100 chars).
 
 ## Configuration
 
-Store file created at `~/.config/cdbm/store.json` on first `cdbm add`.
+**Default locations:**
 
-Config file: `~/.config/cdbm/.cdbm.json` (respects `$XDG_CONFIG_HOME`). Customize `store_path` there.
+- Store file: `~/.config/cdbm/store.json`
+- Config file: `~/.config/cdbm/.cdbm.json`
+- Debug logs: `~/.local/state/cdbm/logs.jsonl`
+
+**Environment variables:**
+
+- `XDG_CONFIG_HOME`: Override config directory
+- `XDG_STATE_HOME`: Override state directory (for debug logs)
+
+**Config options** (in `.cdbm.json`):
+
+```json
+{
+  "store_path": "/path/to/store.json"
+}
+```
+
+## Debug Mode
+
+Enable debug logging to troubleshoot issues:
+
+```bash
+cdbm --debug add --name test
+```
+
+Logs are written to `~/.local/state/cdbm/logs.jsonl`.
+
+## Security
+
+- Symlinks are rejected for security
+- All directory paths are validated and normalized
+- Sensitive files are written with restricted permissions (0o600)

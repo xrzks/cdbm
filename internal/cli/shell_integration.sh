@@ -4,7 +4,13 @@ cdbm() {
     command cdbm "$@"
     ;;
   *)
-    eval "$(command cdbm "$1")"
+    output="$(command cdbm "$1")"
+    if [[ "$output" =~ ^cd\ .+$ ]]; then
+      eval "$output"
+    else
+      echo "Invalid output from cdbm" >&2
+      return 1
+    fi
     ;;
   esac
 }
