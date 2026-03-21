@@ -27,6 +27,11 @@ func New(s *store.Store) *cli.Command {
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
+				Name:    "version",
+				Aliases: []string{"v"},
+				Usage:   "print the version",
+			},
+			&cli.BoolFlag{
 				Name:    "debug",
 				Aliases: []string{"D"},
 				Usage:   "enable debug logging to ~/.local/state/cdbm/logs.jsonl",
