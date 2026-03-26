@@ -7,7 +7,7 @@ function cdbm
     set arg $argv[1]
 
     switch $arg
-        case "add" "list" "delete" "edit" "help" "" "-*"
+        case "add" "list" "delete" "edit" "help" "init" "" "-*"
             command cdbm $argv
         case '*'
             set output (command cdbm $argv)
