@@ -14,12 +14,14 @@ go install github.com/xrzks/cdbm@latest
 
 ## Shell Setup
 
-Add this line to your shell config (usually `~/.bashrc`, `~/.zshrc`):
+Add this line to your shell config (usually `~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`):
 
 ```bash
 eval "$(cdbm init zsh)"
 # or for bash
 eval "$(cdbm init bash)"
+# or for fish
+cdbm init fish | source
 ```
 
 ## Usage

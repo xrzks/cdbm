@@ -11,6 +11,9 @@ import (
 //go:embed shell_integration.sh
 var shellIntegration string
 
+//go:embed shell_integration.fish
+var shellIntegrationFish string
+
 func (c *CLI) NewInitCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "init",
@@ -32,10 +35,12 @@ func installShellIntegration(shell string) error {
 	switch shell {
 	case "zsh", "bash":
 		fmt.Println(shellIntegration)
+	case "fish":
+		fmt.Println(shellIntegrationFish)
 	case "":
-		return fmt.Errorf("no shell specified. Usage: cdbm init <zsh|bash>")
+		return fmt.Errorf("no shell specified. Usage: cdbm init <zsh|bash|fish>")
 	default:
-		return fmt.Errorf("unsupported shell: %s (supported shells: zsh, bash)", shell)
+		return fmt.Errorf("unsupported shell: %s (supported shells: zsh, bash, fish)", shell)
 	}
 	return nil
 }
