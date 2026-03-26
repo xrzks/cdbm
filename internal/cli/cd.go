@@ -38,7 +38,7 @@ func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("path is not a directory")
 	}
 
-	fmt.Printf("cd %s", shellQuote(cleanedPath))
+	fmt.Printf("cd %s\n", shellQuote(cleanedPath))
 	return nil
 }
 
