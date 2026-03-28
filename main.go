@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"log"
-	"os"
 
-	cdbmcli "github.com/xrzks/cdbm/internal/cli"
 	"github.com/xrzks/cdbm/internal/config"
+	kongcli "github.com/xrzks/cdbm/internal/kongcli"
 	"github.com/xrzks/cdbm/internal/store"
 )
 
@@ -21,8 +19,8 @@ func main() {
 		log.Fatalf("Error: %v\n", err)
 	}
 
-	app := cdbmcli.New(store)
-	if err := app.Run(context.Background(), os.Args); err != nil {
+	ctx, _ := kongcli.Parse(store)
+	if err := ctx.Run(); err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}
 }
