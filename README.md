@@ -17,10 +17,11 @@ go install github.com/xrzks/cdbm@latest
 Add this line to your shell config (usually `~/.bashrc`, `~/.zshrc`, `~/.config/fish/config.fish`):
 
 ```bash
-eval "$(cdbm init zsh)"
-# or for bash
+# bash
 eval "$(cdbm init bash)"
-# or for fish
+# zsh
+eval "$(cdbm init zsh)"
+# fish
 cdbm init fish | source
 ```
 
