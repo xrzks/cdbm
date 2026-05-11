@@ -25,6 +25,9 @@ var (
 	nilStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorRed))
 )
 
+// Pretty returns a formatted string representation of the bookmark.
+// If the bookmark is nil, it returns a styled "<nil Bookmark>" message.
+// Otherwise, it returns a formatted string with the bookmark name and directory.
 func (b *Bookmark) Pretty() string {
 	if b == nil {
 		return fmt.Sprint(nilStyle.Render("<nil Bookmark>"))

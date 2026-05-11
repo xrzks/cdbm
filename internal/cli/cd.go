@@ -16,6 +16,12 @@ func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 		cli.ShowRootCommandHelpAndExit(cmd, 1)
 		return nil
 	}
+	
+	// Validate bookmark name before calling GetOne
+	if err := c.store.ValidateBookmarkName(firstArg); err != nil {
+		return err
+	}
+	
 	bookmark, err := c.store.GetOne(firstArg)
 	if err != nil {
 		return err
@@ -26,16 +32,16 @@ func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 	fileInfo, err := os.Lstat(cleanedPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("bookmark directory no longer exists")
+			return fmt.Errorf("bookmark directory no longer exists at: %s", cleanedPath)
 		}
 		return fmt.Errorf("failed to access directory: %w", err)
 	}
 
 	if fileInfo.Mode()&os.ModeSymlink != 0 {
-		return fmt.Errorf("security violation: path is a symlink")
+		return fmt.Errorf("security violation: path is a symlink at: %s", cleanedPath)
 	}
 	if !fileInfo.IsDir() {
-		return fmt.Errorf("path is not a directory")
+		return fmt.Errorf("path is not a directory: %s", cleanedPath)
 	}
 
 	fmt.Printf("cd %s\n", shellQuote(cleanedPath))

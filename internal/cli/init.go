@@ -14,6 +14,8 @@ var shellIntegration string
 //go:embed shell_integration.fish
 var shellIntegrationFish string
 
+// NewInitCommand creates and returns the 'init' CLI command.
+// This command generates shell integration code for supported shells.
 func (c *CLI) NewInitCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "init",
@@ -22,6 +24,8 @@ func (c *CLI) NewInitCommand() *cli.Command {
 	}
 }
 
+// runInitCommand executes the 'init' command to generate shell integration code.
+// It requires a shell type as an argument (zsh, bash, or fish).
 func runInitCommand(ctx context.Context, cmd *cli.Command) error {
 	shell := cmd.Args().Get(0)
 	err := installShellIntegration(shell)
@@ -31,6 +35,8 @@ func runInitCommand(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
+// installShellIntegration prints shell integration code for the specified shell.
+// Supported shells are zsh, bash, and fish. Returns an error for unsupported shells.
 func installShellIntegration(shell string) error {
 	switch shell {
 	case "zsh", "bash":
@@ -40,7 +46,7 @@ func installShellIntegration(shell string) error {
 	case "":
 		return fmt.Errorf("no shell specified. Usage: cdbm init <zsh|bash|fish>")
 	default:
-		return fmt.Errorf("unsupported shell: %s (supported shells: zsh, bash, fish)", shell)
+		return fmt.Errorf("unsupported shell: %s (supported shells: zsh, bash, fish). Usage: cdbm init <zsh|bash|fish>", shell)
 	}
 	return nil
 }

@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+// NewDeleteCommand creates and returns the 'delete' CLI command.
+// This command allows users to remove existing bookmarks by name.
 func (c *CLI) NewDeleteCommand() *cli.Command {
 	return &cli.Command{
 		Name:   "delete",
@@ -15,10 +17,12 @@ func (c *CLI) NewDeleteCommand() *cli.Command {
 	}
 }
 
+// RunDeleteCommand executes the 'delete' command to remove a bookmark.
+// It requires a bookmark name as an argument and returns an error if not provided.
 func (c *CLI) RunDeleteCommand(ctx context.Context, cmd *cli.Command) error {
 	name := cmd.Args().Get(0)
 	if name == "" {
-		return fmt.Errorf("no name specified")
+		return fmt.Errorf("no bookmark name specified. Usage: cdbm delete <bookmark-name>")
 	}
 	if err := c.store.Delete(name); err != nil {
 		return err

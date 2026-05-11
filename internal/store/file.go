@@ -13,15 +13,18 @@ func (s *Store) loadFile() ([]byte, error) {
 		if os.IsNotExist(err) {
 			return []byte("{}"), nil
 		}
-		return nil, fmt.Errorf("failed to read store file: %w", err)
+		return nil, fmt.Errorf("failed to read bookmarks store file: %w", err)
 	}
 	return data, nil
 }
 
 func (s *Store) writeFile() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	dir := filepath.Dir(s.path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
+		return fmt.Errorf("failed to create bookmarks store directory: %w", err)
 	}
 
 	bytes, err := json.Marshal(s.bookmarks)
@@ -30,7 +33,7 @@ func (s *Store) writeFile() error {
 	}
 	err = os.WriteFile(s.path, bytes, 0o600)
 	if err != nil {
-		return fmt.Errorf("failed to write file: %w", err)
+		return fmt.Errorf("failed to write bookmarks to store file: %w", err)
 	}
 	return nil
 }

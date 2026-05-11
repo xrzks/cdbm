@@ -15,6 +15,7 @@ type StoreInterface interface {
 	GetAll() []*Bookmark
 	Delete(name string) error
 	Edit(name string, newName string, newDirectory string) error
+	ValidateBookmarkName(name string) error
 }
 
 var BookmarkNameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
@@ -26,6 +27,8 @@ type Store struct {
 	mu        sync.RWMutex
 }
 
+// NewStore creates a new Store instance with the given file path.
+// It creates the necessary directory structure if it doesn't exist and loads existing bookmarks.
 func NewStore(path string) (*Store, error) {
 	store := Store{
 		path:      path,
@@ -34,7 +37,7 @@ func NewStore(path string) (*Store, error) {
 
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return nil, fmt.Errorf("failed to create store directory: %w", err)
+		return nil, fmt.Errorf("failed to create bookmarks store directory: %w", err)
 	}
 
 	err := store.loadBookmarks()
@@ -44,15 +47,22 @@ func NewStore(path string) (*Store, error) {
 	return &store, nil
 }
 
+// ValidateBookmarkName validates a bookmark name according to the naming rules.
+// It checks that the name is not empty, not too long, and contains only valid characters.
+// Returns an error if the name is invalid.
+func (s *Store) ValidateBookmarkName(name string) error {
+	return validateBookmarkName(name)
+}
+
 func validateBookmarkName(name string) error {
 	if name == "" {
-		return fmt.Errorf("bookmark name cannot be empty")
+			return fmt.Errorf("bookmark name cannot be empty")
 	}
 	if len(name) > 100 {
-		return fmt.Errorf("bookmark name too long (max 100 characters)")
+		return fmt.Errorf("bookmark name is too long (maximum 100 characters allowed)")
 	}
 	if !BookmarkNameRegex.MatchString(name) {
-		return fmt.Errorf("bookmark name contains invalid characters (only letters, numbers, ., _, and - allowed)")
+		return fmt.Errorf("bookmark name contains invalid characters. Only letters, numbers, periods (.), underscores (_), and hyphens (-) are allowed")
 	}
 	return nil
 }
@@ -60,28 +70,30 @@ func validateBookmarkName(name string) error {
 func validateDirectory(directory string) (string, error) {
 	absPath, err := filepath.Abs(directory)
 	if err != nil {
-		return "", fmt.Errorf("invalid directory path: %w", err)
+		return "", fmt.Errorf("failed to convert directory path to absolute path: %w", err)
 	}
 
 	// Check if the final path component is a symlink for security
 	fileInfo, err := os.Lstat(absPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", fmt.Errorf("directory '%v' does not exist", directory)
+			return "", fmt.Errorf("directory '%s' does not exist", directory)
 		}
 		return "", fmt.Errorf("failed to access directory: %w", err)
 	}
 
 	if fileInfo.Mode()&os.ModeSymlink != 0 {
-		return "", fmt.Errorf("symlinks are not allowed for security reasons")
+		return "", fmt.Errorf("symlinks are not allowed for security reasons: '%s' is a symlink", absPath)
 	}
 	if !fileInfo.IsDir() {
-		return "", fmt.Errorf("path is not a directory")
+		return "", fmt.Errorf("path is not a directory: '%s'", absPath)
 	}
 
 	return filepath.Clean(absPath), nil
 }
 
+// GetOne retrieves a bookmark by name.
+// Returns an error if the bookmark name is invalid or the bookmark doesn't exist.
 func (s *Store) GetOne(name string) (*Bookmark, error) {
 	if err := validateBookmarkName(name); err != nil {
 		return nil, err
@@ -92,11 +104,14 @@ func (s *Store) GetOne(name string) (*Bookmark, error) {
 	s.mu.RUnlock()
 
 	if !exists {
-		return nil, fmt.Errorf("bookmark not found")
+		return nil, fmt.Errorf("bookmark '%s' does not exist", name)
 	}
 	return &Bookmark{Name: bm.Name, Directory: bm.Directory}, nil
 }
 
+// Add creates a new bookmark with the given name and directory.
+// Returns an error if the name is invalid, the directory doesn't exist,
+// or a bookmark with the same name already exists.
 func (s *Store) Add(name string, directory string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -122,6 +137,8 @@ func (s *Store) Add(name string, directory string) error {
 	return s.writeFile()
 }
 
+// GetAll returns a copy of all bookmarks in the store.
+// The returned slice contains copies of the bookmarks to prevent external modifications.
 func (s *Store) GetAll() []*Bookmark {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -133,24 +150,31 @@ func (s *Store) GetAll() []*Bookmark {
 	return list
 }
 
+// Delete removes a bookmark by name.
+// Returns an error if the bookmark doesn't exist.
 func (s *Store) Delete(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, exists := s.bookmarks[name]; !exists {
-		return fmt.Errorf("bookmark not found")
+		return fmt.Errorf("bookmark '%s' does not exist", name)
 	}
 	delete(s.bookmarks, name)
 	return s.writeFile()
 }
 
+// Edit updates an existing bookmark's name and/or directory.
+// If newName is empty, the original name is kept.
+// If newDirectory is empty, the original directory is kept.
+// Returns an error if the bookmark doesn't exist, the new name is invalid,
+// or a bookmark with the new name already exists.
 func (s *Store) Edit(name string, newName string, newDirectory string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	bm, exists := s.bookmarks[name]
 	if !exists {
-		return fmt.Errorf("bookmark not found")
+		return fmt.Errorf("bookmark '%s' does not exist", name)
 	}
 
 	// Determine final name
@@ -193,6 +217,9 @@ func (s *Store) Edit(name string, newName string, newDirectory string) error {
 }
 
 func (s *Store) loadBookmarks() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	data, err := s.loadFile()
 	if err != nil {
 		return err
@@ -200,7 +227,7 @@ func (s *Store) loadBookmarks() error {
 
 	err = json.Unmarshal(data, &s.bookmarks)
 	if err != nil {
-		return fmt.Errorf("failed to parse bookmarks. The file may be corrupted: %w", err)
+		return fmt.Errorf("failed to parse bookmarks. The store file may be corrupted: %w", err)
 	}
 
 	validBookmarks := make(map[string]*Bookmark)
@@ -209,7 +236,7 @@ func (s *Store) loadBookmarks() error {
 			return fmt.Errorf("invalid bookmark name '%s' in store file: %w", name, err)
 		}
 		if bm == nil {
-			return fmt.Errorf("bookmark '%s' is null in store file", name)
+			return fmt.Errorf("bookmark data for '%s' is corrupted in store file", name)
 		}
 		validBookmarks[name] = bm
 	}
