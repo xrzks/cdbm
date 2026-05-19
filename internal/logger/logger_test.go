@@ -75,7 +75,7 @@ func TestFileLogger_Log(t *testing.T) {
 		t.Errorf("Expected detail 'key1' to be 'value1', got '%v'", logEntry.Details["key1"])
 	}
 	
-	if logEntry.Details["key2"] != 42 {
+	if v, ok := logEntry.Details["key2"].(float64); !ok || v != 42 {
 		t.Errorf("Expected detail 'key2' to be 42, got '%v'", logEntry.Details["key2"])
 	}
 	
@@ -215,7 +215,8 @@ func TestLogEntry_JSONSerialization(t *testing.T) {
 		t.Errorf("Expected detail 'key1' to match, got '%v' vs '%v'", entry2.Details["key1"], entry.Details["key1"])
 	}
 	
-	if entry2.Details["key2"] != entry.Details["key2"] {
+	v2, ok := entry2.Details["key2"].(float64)
+	if !ok || v2 != 42 {
 		t.Errorf("Expected detail 'key2' to match, got '%v' vs '%v'", entry2.Details["key2"], entry.Details["key2"])
 	}
 }

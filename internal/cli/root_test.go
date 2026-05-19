@@ -42,7 +42,7 @@ func TestCLI_New(t *testing.T) {
 	}
 	
 	// Check that commands are registered
-	expectedCommands := []string{"add", "list", "init", "edit", "delete"}
+	expectedCommands := []string{"add", "list", "init", "edit", "remove"}
 	cmdMap := make(map[string]bool)
 	for _, subCmd := range cmd.Commands {
 		cmdMap[subCmd.Name] = true
@@ -192,7 +192,7 @@ func TestCLI_logDebugWithError(t *testing.T) {
 	strOutput := string(output[:n])
 	
 	// Verify that the warning message was written to stderr
-	if !strings.Contains(strOutput, "Warning: failed to log debug info") {
+	if !strings.Contains(strOutput, "Warning: failed to write debug log entry") {
 		t.Errorf("Expected warning message in stderr, got: %s", strOutput)
 	}
 }

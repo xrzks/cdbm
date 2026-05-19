@@ -8,7 +8,6 @@ import (
 )
 
 func TestInstallShellIntegration(t *testing.T) {
-	// Test cases for supported shells
 	tests := []struct {
 		shell     string
 		expectErr bool
@@ -16,47 +15,34 @@ func TestInstallShellIntegration(t *testing.T) {
 		{"zsh", false},
 		{"bash", false},
 		{"fish", false},
-		{"", true}, // No shell specified
-		{"unsupported", true}, // Unsupported shell
+		{"", true},
+		{"unsupported", true},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.shell, func(t *testing.T) {
-			// Capture stdout
 			oldStdout := stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
-			
-			defer func() {
-				os.Stdout = oldStdout
-				w.Close()
-			}()
-			
+
 			err := installShellIntegration(tt.shell)
-			
-			// Restore stdout
+
 			w.Close()
-			
-			// Read captured stdout
+			os.Stdout = oldStdout
+
 			output := make([]byte, 1024)
-			n, err := r.Read(output)
-			if err != nil && err != io.EOF {
-				t.Errorf("Error reading from pipe: %v", err)
-			}
+			n, _ := r.Read(output)
 			strOutput := string(output[:n])
-			
-			// Check error expectations
+
 			if (err != nil) != tt.expectErr {
 				t.Errorf("Expected error: %v, got error: %v", tt.expectErr, err)
 			}
-			
-			// Check output expectations
+
 			if !tt.expectErr {
 				if len(strOutput) == 0 {
 					t.Error("Expected output for supported shell, but got empty string")
 				}
 			} else {
-				// For error cases, verify error message contains expected info
 				if tt.shell == "" {
 					if !strings.Contains(err.Error(), "no shell specified") {
 						t.Errorf("Expected 'no shell specified' error message, got: %v", err)
@@ -67,14 +53,15 @@ func TestInstallShellIntegration(t *testing.T) {
 					}
 				}
 			}
+
+			_ = strOutput
+			_ = io.EOF
 		})
 	}
 }
 
-// Override stdout for testing
 var stdout = os.Stdout
 
-// Mock command for testing init command
 type mockCommand struct {
 	args []string
 }

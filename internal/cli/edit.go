@@ -7,8 +7,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// NewEditCommand creates and returns the 'edit' CLI command.
-// This command allows users to modify existing bookmarks by changing their name and/or directory.
 func (c *CLI) NewEditCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "edit",
@@ -29,9 +27,6 @@ func (c *CLI) NewEditCommand() *cli.Command {
 	}
 }
 
-// RunEditCommand executes the 'edit' command to modify an existing bookmark.
-// It requires a bookmark name as an argument and optional --name and --directory flags
-// to specify what to change. At least one flag must be provided.
 func (c *CLI) RunEditCommand(ctx context.Context, cmd *cli.Command) error {
 	name := cmd.Args().Get(0)
 	if name == "" {
@@ -43,8 +38,7 @@ func (c *CLI) RunEditCommand(ctx context.Context, cmd *cli.Command) error {
 	if newName == "" && newDirectory == "" {
 		return fmt.Errorf("at least one of --name or --directory must be specified to edit the bookmark")
 	}
-	
-	// Validate new name if provided
+
 	if newName != "" {
 		if err := c.store.ValidateBookmarkName(newName); err != nil {
 			return fmt.Errorf("invalid new name: %w", err)

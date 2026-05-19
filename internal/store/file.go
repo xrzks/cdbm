@@ -19,9 +19,6 @@ func (s *Store) loadFile() ([]byte, error) {
 }
 
 func (s *Store) writeFile() error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	
 	dir := filepath.Dir(s.path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create bookmarks store directory: %w", err)

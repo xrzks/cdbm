@@ -23,8 +23,6 @@ type LogEntry struct {
 	Details   map[string]any `json:"details,omitempty"`
 }
 
-// NewFileLogger creates a new file logger that writes JSON log entries to the specified path.
-// It creates the necessary directory structure if it doesn't exist and opens the file in append mode.
 func NewFileLogger(path string) (*FileLogger, error) {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -42,8 +40,6 @@ func NewFileLogger(path string) (*FileLogger, error) {
 	}, nil
 }
 
-// Log writes a JSON-formatted log entry with the given action and details.
-// Each entry includes a timestamp, action name, and optional details map.
 func (l *FileLogger) Log(action string, details map[string]any) error {
 	entry := LogEntry{
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
@@ -63,13 +59,12 @@ func (l *FileLogger) Log(action string, details map[string]any) error {
 	return nil
 }
 
-// Close closes the underlying log file.
-// This should be called when the logger is no longer needed.
 func (l *FileLogger) Close() error {
 	if l.file != nil {
 		if err := l.file.Close(); err != nil {
 			return fmt.Errorf("failed to close log file: %w", err)
 		}
+		l.file = nil
 	}
 	return nil
 }

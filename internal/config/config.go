@@ -16,9 +16,6 @@ type Config struct {
 	StorePath string `json:"store_path"`
 }
 
-// Load loads the configuration from the user's config directory.
-// If no config file exists, it returns a default configuration.
-// The config file is expected to be at XDG_CONFIG_HOME/cdbm/.cdbm.json or ~/.config/cdbm/.cdbm.json.
 func Load() (*Config, error) {
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -76,9 +73,6 @@ func expandPath(path string) string {
 	return expanded
 }
 
-// GetStatePath returns the path to the state directory for cdbm.
-// It follows the XDG Base Directory specification, using XDG_STATE_HOME if set,
-// otherwise defaulting to ~/.local/state/cdbm.
 func GetStatePath() (string, error) {
 	if stateDir := os.Getenv("XDG_STATE_HOME"); stateDir != "" {
 		return filepath.Join(stateDir, "cdbm"), nil

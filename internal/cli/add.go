@@ -10,8 +10,6 @@ import (
 	"github.com/xrzks/cdbm/internal/store"
 )
 
-// NewAddCommand creates and returns the 'add' CLI command.
-// This command allows users to add new directory bookmarks.
 func (c *CLI) NewAddCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "add",
@@ -34,9 +32,6 @@ func (c *CLI) NewAddCommand() *cli.Command {
 	}
 }
 
-// RunAddCommand executes the 'add' command to create a new bookmark.
-// It accepts optional --name and --directory flags, or uses the current directory
-// and derives a name from it if not provided.
 func (c *CLI) RunAddCommand(ctx context.Context, cmd *cli.Command) error {
 	var name string
 	var directory string
@@ -45,7 +40,6 @@ func (c *CLI) RunAddCommand(ctx context.Context, cmd *cli.Command) error {
 	nameFlag := cmd.String("name")
 	directoryFlag := cmd.String("directory")
 
-	// get dir from flag or current working dir
 	if cmd.IsSet("directory") {
 		directory = directoryFlag
 	} else {
@@ -54,10 +48,8 @@ func (c *CLI) RunAddCommand(ctx context.Context, cmd *cli.Command) error {
 			return fmt.Errorf("failed to get current directory: %w", err)
 		}
 	}
-	// get name from flag or current working dir
 	if cmd.IsSet("name") {
 		name = nameFlag
-		// Validate name if provided
 		if err := c.store.ValidateBookmarkName(name); err != nil {
 			return fmt.Errorf("invalid bookmark name: %w", err)
 		}

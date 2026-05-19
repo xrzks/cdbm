@@ -52,8 +52,8 @@ cdbm edit docs --directory ~/Documents/docs-new
 # edit a bookmark (rename and move)
 cdbm edit projects --name my-projects --directory ~/dev/projects-new
 
-# delete a bookmark
-cdbm delete projects
+# remove a bookmark
+cdbm remove projects
 ```
 
 ## Bookmark Names

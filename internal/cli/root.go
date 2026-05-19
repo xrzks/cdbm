@@ -17,15 +17,13 @@ type CLI struct {
 	logger logger.Logger
 }
 
-// New creates a new CLI command with all subcommands configured.
-// The returned command is the root command for the cdbm application.
 func New(s *store.Store) *cli.Command {
 	c := &CLI{store: s}
 	return &cli.Command{
 		Name:                  "cdbm",
 		Usage:                 "Manage directory bookmarks",
 		Aliases:               []string{"a"},
-		Version:               "0.3.4",
+		Version:               "0.3.5",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
@@ -41,14 +39,12 @@ func New(s *store.Store) *cli.Command {
 			c.NewListCommand(),
 			c.NewInitCommand(),
 			c.NewEditCommand(),
-			c.NewDeleteCommand(),
+			c.NewRemoveCommand(),
 		},
 		Action: c.RunCdCommand,
 	}
 }
 
-// setupLogger initializes the logger if debug mode is enabled.
-// It creates a file logger that writes to ~/.local/state/cdbm/logs.jsonl.
 func (c *CLI) setupLogger(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 	if cmd.Bool("debug") {
 		statePath, err := config.GetStatePath()
@@ -65,8 +61,6 @@ func (c *CLI) setupLogger(ctx context.Context, cmd *cli.Command) (context.Contex
 	return ctx, nil
 }
 
-// closeLogger closes the file logger if it was created.
-// This should be called after the command execution completes.
 func (c *CLI) closeLogger(ctx context.Context, cmd *cli.Command) error {
 	if c.logger != nil {
 		if fl, ok := c.logger.(*logger.FileLogger); ok {
@@ -76,8 +70,6 @@ func (c *CLI) closeLogger(ctx context.Context, cmd *cli.Command) error {
 	return nil
 }
 
-// logDebug writes debug information to the logger if enabled.
-// It logs the action and associated details as a JSON entry.
 func (c *CLI) logDebug(action string, details map[string]any) {
 	if c.logger != nil {
 		if err := c.logger.Log(action, details); err != nil {

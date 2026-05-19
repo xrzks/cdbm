@@ -16,12 +16,11 @@ func (c *CLI) RunCdCommand(ctx context.Context, cmd *cli.Command) error {
 		cli.ShowRootCommandHelpAndExit(cmd, 1)
 		return nil
 	}
-	
-	// Validate bookmark name before calling GetOne
+
 	if err := c.store.ValidateBookmarkName(firstArg); err != nil {
 		return err
 	}
-	
+
 	bookmark, err := c.store.GetOne(firstArg)
 	if err != nil {
 		return err

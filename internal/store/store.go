@@ -27,8 +27,6 @@ type Store struct {
 	mu        sync.RWMutex
 }
 
-// NewStore creates a new Store instance with the given file path.
-// It creates the necessary directory structure if it doesn't exist and loads existing bookmarks.
 func NewStore(path string) (*Store, error) {
 	store := Store{
 		path:      path,
@@ -47,16 +45,13 @@ func NewStore(path string) (*Store, error) {
 	return &store, nil
 }
 
-// ValidateBookmarkName validates a bookmark name according to the naming rules.
-// It checks that the name is not empty, not too long, and contains only valid characters.
-// Returns an error if the name is invalid.
 func (s *Store) ValidateBookmarkName(name string) error {
 	return validateBookmarkName(name)
 }
 
 func validateBookmarkName(name string) error {
 	if name == "" {
-			return fmt.Errorf("bookmark name cannot be empty")
+		return fmt.Errorf("bookmark name cannot be empty")
 	}
 	if len(name) > 100 {
 		return fmt.Errorf("bookmark name is too long (maximum 100 characters allowed)")
@@ -73,7 +68,6 @@ func validateDirectory(directory string) (string, error) {
 		return "", fmt.Errorf("failed to convert directory path to absolute path: %w", err)
 	}
 
-	// Check if the final path component is a symlink for security
 	fileInfo, err := os.Lstat(absPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -92,8 +86,6 @@ func validateDirectory(directory string) (string, error) {
 	return filepath.Clean(absPath), nil
 }
 
-// GetOne retrieves a bookmark by name.
-// Returns an error if the bookmark name is invalid or the bookmark doesn't exist.
 func (s *Store) GetOne(name string) (*Bookmark, error) {
 	if err := validateBookmarkName(name); err != nil {
 		return nil, err
@@ -109,9 +101,6 @@ func (s *Store) GetOne(name string) (*Bookmark, error) {
 	return &Bookmark{Name: bm.Name, Directory: bm.Directory}, nil
 }
 
-// Add creates a new bookmark with the given name and directory.
-// Returns an error if the name is invalid, the directory doesn't exist,
-// or a bookmark with the same name already exists.
 func (s *Store) Add(name string, directory string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -137,8 +126,6 @@ func (s *Store) Add(name string, directory string) error {
 	return s.writeFile()
 }
 
-// GetAll returns a copy of all bookmarks in the store.
-// The returned slice contains copies of the bookmarks to prevent external modifications.
 func (s *Store) GetAll() []*Bookmark {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -150,8 +137,6 @@ func (s *Store) GetAll() []*Bookmark {
 	return list
 }
 
-// Delete removes a bookmark by name.
-// Returns an error if the bookmark doesn't exist.
 func (s *Store) Delete(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -163,11 +148,6 @@ func (s *Store) Delete(name string) error {
 	return s.writeFile()
 }
 
-// Edit updates an existing bookmark's name and/or directory.
-// If newName is empty, the original name is kept.
-// If newDirectory is empty, the original directory is kept.
-// Returns an error if the bookmark doesn't exist, the new name is invalid,
-// or a bookmark with the new name already exists.
 func (s *Store) Edit(name string, newName string, newDirectory string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -177,7 +157,6 @@ func (s *Store) Edit(name string, newName string, newDirectory string) error {
 		return fmt.Errorf("bookmark '%s' does not exist", name)
 	}
 
-	// Determine final name
 	finalName := name
 	if newName != "" {
 		if newName != name {
@@ -191,7 +170,6 @@ func (s *Store) Edit(name string, newName string, newDirectory string) error {
 		}
 	}
 
-	// Determine final directory
 	finalDirectory := bm.Directory
 	if newDirectory != "" {
 		absPath, err := validateDirectory(newDirectory)
@@ -201,13 +179,11 @@ func (s *Store) Edit(name string, newName string, newDirectory string) error {
 		finalDirectory = absPath
 	}
 
-	// Create a new bookmark to avoid mutating shared references
 	newBookmark := &Bookmark{
 		Name:      finalName,
 		Directory: finalDirectory,
 	}
 
-	// Remove old entry if name changed
 	if finalName != name {
 		delete(s.bookmarks, name)
 	}
@@ -219,7 +195,7 @@ func (s *Store) Edit(name string, newName string, newDirectory string) error {
 func (s *Store) loadBookmarks() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	data, err := s.loadFile()
 	if err != nil {
 		return err
