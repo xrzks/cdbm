@@ -9,10 +9,10 @@ import (
 
 func (c *CLI) NewRemoveCommand() *cli.Command {
 	return &cli.Command{
-		Name:   "remove",
-		Usage:  "remove an existing bookmark",
+		Name:    "remove",
+		Usage:   "remove an existing bookmark",
 		Aliases: []string{"rm"},
-		Action: c.RunRemoveCommand,
+		Action:  c.RunRemoveCommand,
 	}
 }
 

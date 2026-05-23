@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"sync"
 )
 
@@ -134,6 +135,7 @@ func (s *Store) GetAll() []*Bookmark {
 	for _, bm := range s.bookmarks {
 		list = append(list, &Bookmark{Name: bm.Name, Directory: bm.Directory})
 	}
+	sort.Slice(list, func(i, j int) bool { return list[i].Name < list[j].Name })
 	return list
 }
 

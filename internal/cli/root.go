@@ -23,7 +23,7 @@ func New(s *store.Store) *cli.Command {
 		Name:                  "cdbm",
 		Usage:                 "Manage directory bookmarks",
 		Aliases:               []string{"a"},
-		Version:               "0.3.6",
+		Version:               "0.3.7",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{

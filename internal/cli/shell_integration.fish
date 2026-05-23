@@ -14,7 +14,7 @@ function cdbm
             if string match -q "cd *" $output
                 eval $output
             else
-                echo "Invalid output from cdbm" >&2
+                echo "Invalid output from cdbm" 1>&2
                 return 1
             end
     end
