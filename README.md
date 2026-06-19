@@ -6,7 +6,7 @@ CLI tool for managing directory bookmarks.
 
 ## Installation
 
-Requires Go 1.25.5 or later.
+Requires Go 1.26.4 or later.
 
 ```bash
 go install github.com/xrzks/cdbm@latest
