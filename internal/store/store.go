@@ -208,16 +208,10 @@ func (s *Store) loadBookmarks() error {
 		return fmt.Errorf("failed to parse bookmarks. The store file may be corrupted: %w", err)
 	}
 
-	validBookmarks := make(map[string]*Bookmark)
 	for name, bm := range s.bookmarks {
-		if err := validateBookmarkName(name); err != nil {
-			return fmt.Errorf("invalid bookmark name '%s' in store file: %w", name, err)
-		}
 		if bm == nil {
 			return fmt.Errorf("bookmark data for '%s' is corrupted in store file", name)
 		}
-		validBookmarks[name] = bm
 	}
-	s.bookmarks = validBookmarks
 	return nil
 }

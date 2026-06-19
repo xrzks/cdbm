@@ -40,6 +40,7 @@ func New(s *store.Store) *cli.Command {
 			c.NewInitCommand(),
 			c.NewEditCommand(),
 			c.NewRemoveCommand(),
+			c.NewCleanCommand(),
 		},
 		Action: c.RunCdCommand,
 	}
