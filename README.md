@@ -1,5 +1,3 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/xrzks/cdbm)](https://goreportcard.com/report/github.com/xrzks/cdbm)
-
 # cdbm - cd to bookmark
 
 CLI tool for managing directory bookmarks.
