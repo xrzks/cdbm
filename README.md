@@ -94,3 +94,13 @@ Logs are written to `~/.local/state/cdbm/logs.jsonl`.
 - Symlinks are rejected for security
 - All directory paths are validated and normalized
 - Sensitive files are written with restricted permissions (0o600)
+
+## Roadmap
+
+- [x] Add, list, edit, remove, and navigate to bookmarks
+- [x] Clean invalid bookmarks and missing directories, with dry-run support
+- [x] Support Bash, Zsh, and Fish shell integration
+- [x] Support XDG paths, custom store locations, and debug logging
+- [ ] Add shell completion for bookmark names
+- [ ] Add bookmark search and fuzzy matching
+- [ ] Add import, export, and backup commands
