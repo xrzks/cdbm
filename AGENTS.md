@@ -5,7 +5,7 @@
 cdbm is a Go CLI tool for managing directory bookmarks using urfave/cli/v3.
 
 **Module**: `github.com/xrzks/cdbm`
-**Go Version**: 1.25.5
+**Go Version**: 1.26.7
 
 ## Essential Commands
 
