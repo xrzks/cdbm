@@ -40,7 +40,7 @@ func TestLoadWithExistingConfig(t *testing.T) {
 		t.Fatalf("failed to create config directory: %v", err)
 	}
 
-	configPath := filepath.Join(configDir, ".cdbm.json")
+	configPath := filepath.Join(configDir, "config.json")
 	configContent := `{"store_path": "/custom/store/path.json"}`
 	err = os.WriteFile(configPath, []byte(configContent), 0o644)
 	if err != nil {
@@ -71,7 +71,7 @@ func TestLoadWithEnvVar(t *testing.T) {
 		t.Fatalf("failed to create config directory: %v", err)
 	}
 
-	configPath := filepath.Join(configDir, ".cdbm.json")
+	configPath := filepath.Join(configDir, "config.json")
 	configContent := `{"store_path": "$CUSTOM_DIR/store.json"}`
 	err = os.WriteFile(configPath, []byte(configContent), 0o644)
 	if err != nil {
@@ -110,7 +110,7 @@ func TestLoadWithTilde(t *testing.T) {
 		t.Fatalf("failed to create config directory: %v", err)
 	}
 
-	configPath := filepath.Join(configDir, ".cdbm.json")
+	configPath := filepath.Join(configDir, "config.json")
 	configContent := `{"store_path": "~/custom/store.json"}`
 	err = os.WriteFile(configPath, []byte(configContent), 0o644)
 	if err != nil {
@@ -141,7 +141,7 @@ func TestLoadInvalidJSON(t *testing.T) {
 		t.Fatalf("failed to create config directory: %v", err)
 	}
 
-	configPath := filepath.Join(configDir, ".cdbm.json")
+	configPath := filepath.Join(configDir, "config.json")
 	configContent := `invalid json`
 	err = os.WriteFile(configPath, []byte(configContent), 0o644)
 	if err != nil {

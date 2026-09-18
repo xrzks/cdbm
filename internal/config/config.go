@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	defaultConfigFile = ".cdbm.json"
+	defaultConfigFile = "config.json"
 	defaultStoreFile  = "store.json"
 )
 

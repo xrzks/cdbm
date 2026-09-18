@@ -156,7 +156,7 @@ Names must match `^[a-zA-Z0-9._-]+$` and be at most 100 characters. Anything els
 | File | Path |
 | --- | --- |
 | Store | `~/.config/cdbm/store.json` |
-| Config | `~/.config/cdbm/.cdbm.json` |
+| Config | `~/.config/cdbm/config.json` |
 | Debug logs | `~/.local/state/cdbm/logs.jsonl` |
 
 **Environment variables:**
@@ -164,7 +164,7 @@ Names must match `^[a-zA-Z0-9._-]+$` and be at most 100 characters. Anything els
 - `XDG_CONFIG_HOME` — overrides the config directory
 - `XDG_STATE_HOME` — overrides the state directory used for debug logs
 
-**Config file** (`~/.config/cdbm/.cdbm.json`) is optional. Supported keys:
+**Config file** (`~/.config/cdbm/config.json`) is optional. Supported keys:
 
 ```json
 {
