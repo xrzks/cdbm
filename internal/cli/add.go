@@ -13,19 +13,17 @@ import (
 func (c *CLI) NewAddCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "add",
-		Usage: "add a new entry",
+		Usage: "bookmark a directory",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "name",
-				Aliases:  []string{"n"},
-				Usage:    "the name of the bookmark",
-				Required: false,
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "bookmark name (default: sanitized directory basename)",
 			},
 			&cli.StringFlag{
-				Name:     "directory",
-				Aliases:  []string{"d"},
-				Usage:    "the bookmarked directory",
-				Required: false,
+				Name:    "directory",
+				Aliases: []string{"d"},
+				Usage:   "directory to bookmark (default: current directory)",
 			},
 		},
 		Action: c.RunAddCommand,

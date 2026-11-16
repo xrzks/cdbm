@@ -26,7 +26,7 @@ func TestCLI_New(t *testing.T) {
 	}
 
 	// Create CLI
-	cmd := New(s)
+	cmd := New("test", s)
 
 	// Verify command structure
 	if cmd == nil {
@@ -37,8 +37,8 @@ func TestCLI_New(t *testing.T) {
 		t.Errorf("Expected command name 'cdbm', got '%s'", cmd.Name)
 	}
 
-	if cmd.Usage != "Manage directory bookmarks" {
-		t.Errorf("Expected usage 'Manage directory bookmarks', got '%s'", cmd.Usage)
+	if cmd.Usage != "manage directory bookmarks" {
+		t.Errorf("Expected usage 'manage directory bookmarks', got '%s'", cmd.Usage)
 	}
 
 	// Check that commands are registered
@@ -192,7 +192,7 @@ func TestCLI_logDebugWithError(t *testing.T) {
 	strOutput := string(output[:n])
 
 	// Verify that the warning message was written to stderr
-	if !strings.Contains(strOutput, "Warning: failed to write debug log entry") {
+	if !strings.Contains(strOutput, "warning: failed to write debug log entry") {
 		t.Errorf("Expected warning message in stderr, got: %s", strOutput)
 	}
 }

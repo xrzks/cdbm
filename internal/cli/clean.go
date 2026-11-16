@@ -11,20 +11,20 @@ import (
 func (c *CLI) NewCleanCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "clean",
-		Usage: "remove bookmarks pointing to non-existent directories or with invalid names",
+		Usage: "remove bookmarks with missing directories or invalid names",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "dry-run",
 				Aliases: []string{"n"},
-				Usage:   "show what would be removed without actually deleting",
+				Usage:   "show what would happen without making changes",
 			},
 			&cli.BoolFlag{
 				Name:  "invalid-names",
-				Usage: "remove bookmarks with invalid names",
+				Usage: "only remove bookmarks with invalid names",
 			},
 			&cli.BoolFlag{
 				Name:  "missing-dirs",
-				Usage: "remove bookmarks pointing to non-existent directories",
+				Usage: "only remove bookmarks whose directories no longer exist",
 			},
 		},
 		Action: c.RunCleanCommand,

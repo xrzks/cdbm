@@ -16,9 +16,10 @@ var shellIntegrationFish string
 
 func (c *CLI) NewInitCommand() *cli.Command {
 	return &cli.Command{
-		Name:   "init",
-		Usage:  "generate shell initialization code",
-		Action: runInitCommand,
+		Name:      "init",
+		Usage:     "print shell integration code",
+		ArgsUsage: "<bash|zsh|fish>",
+		Action:    runInitCommand,
 	}
 }
 
@@ -38,9 +39,9 @@ func installShellIntegration(shell string) error {
 	case "fish":
 		fmt.Println(shellIntegrationFish)
 	case "":
-		return fmt.Errorf("no shell specified. Usage: cdbm init <zsh|bash|fish>")
+		return fmt.Errorf("no shell specified (see cdbm init --help)")
 	default:
-		return fmt.Errorf("unsupported shell: %s (supported shells: zsh, bash, fish). Usage: cdbm init <zsh|bash|fish>", shell)
+		return fmt.Errorf("unsupported shell %q: use bash, zsh, or fish", shell)
 	}
 	return nil
 }

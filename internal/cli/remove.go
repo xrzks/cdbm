@@ -9,17 +9,18 @@ import (
 
 func (c *CLI) NewRemoveCommand() *cli.Command {
 	return &cli.Command{
-		Name:    "remove",
-		Usage:   "remove an existing bookmark",
-		Aliases: []string{"rm"},
-		Action:  c.RunRemoveCommand,
+		Name:      "remove",
+		Usage:     "remove a bookmark",
+		Aliases:   []string{"rm"},
+		ArgsUsage: "<name>",
+		Action:    c.RunRemoveCommand,
 	}
 }
 
 func (c *CLI) RunRemoveCommand(ctx context.Context, cmd *cli.Command) error {
 	name := cmd.Args().Get(0)
 	if name == "" {
-		return fmt.Errorf("no bookmark name specified. Usage: cdbm remove <bookmark-name>")
+		return fmt.Errorf("no bookmark name specified (see cdbm remove --help)")
 	}
 	if err := c.store.Delete(name); err != nil {
 		return err
