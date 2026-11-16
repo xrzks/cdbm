@@ -1,3 +1,4 @@
+// Package cli defines the cdbm command-line interface and its subcommands.
 package cli
 
 import (
@@ -7,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v3"
+
 	"github.com/xrzks/cdbm/internal/config"
 	"github.com/xrzks/cdbm/internal/logger"
 	"github.com/xrzks/cdbm/internal/store"
@@ -17,19 +19,20 @@ type CLI struct {
 	logger logger.Logger
 }
 
-func New(s *store.Store) *cli.Command {
+// New builds the cdbm command backed by s. version is reported by --version.
+func New(version string, s *store.Store) *cli.Command {
 	c := &CLI{store: s}
-	return &cli.Command{
+	cmd := &cli.Command{
 		Name:                  "cdbm",
-		Usage:                 "Manage directory bookmarks",
-		Aliases:               []string{"a"},
-		Version:               "0.5",
+		Usage:                 "manage directory bookmarks",
+		Version:               version,
+		UsageText:             "cdbm [global options] <name>\ncdbm [global options] <command> [command options]",
 		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "debug",
 				Aliases: []string{"D"},
-				Usage:   "enable debug logging to ~/.local/state/cdbm/logs.jsonl",
+				Usage:   "append debug logs to ~/.local/state/cdbm/logs.jsonl",
 			},
 		},
 		Before: c.setupLogger,
@@ -37,13 +40,24 @@ func New(s *store.Store) *cli.Command {
 		Commands: []*cli.Command{
 			c.NewAddCommand(),
 			c.NewListCommand(),
-			c.NewInitCommand(),
 			c.NewEditCommand(),
 			c.NewRemoveCommand(),
 			c.NewCleanCommand(),
+			c.NewInitCommand(),
 		},
 		Action: c.RunCdCommand,
 	}
+	cmd.OnUsageError = onUsageError
+	for _, sub := range cmd.Commands {
+		sub.OnUsageError = onUsageError
+	}
+	return cmd
+}
+
+// onUsageError returns usage errors instead of printing them with the full
+// help; main prints the returned error, so this keeps it to a single line.
+func onUsageError(_ context.Context, cmd *cli.Command, err error, _ bool) error {
+	return fmt.Errorf("%w (see %s --help)", err, cmd.FullName())
 }
 
 func (c *CLI) setupLogger(ctx context.Context, cmd *cli.Command) (context.Context, error) {
@@ -74,7 +88,7 @@ func (c *CLI) closeLogger(ctx context.Context, cmd *cli.Command) error {
 func (c *CLI) logDebug(action string, details map[string]any) {
 	if c.logger != nil {
 		if err := c.logger.Log(action, details); err != nil {
-			fmt.Fprintf(os.Stderr, "Warning: failed to write debug log entry: %v\n", err)
+			fmt.Fprintf(os.Stderr, "warning: failed to write debug log entry: %v\n", err)
 		}
 	}
 }

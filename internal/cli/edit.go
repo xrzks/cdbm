@@ -9,18 +9,19 @@ import (
 
 func (c *CLI) NewEditCommand() *cli.Command {
 	return &cli.Command{
-		Name:  "edit",
-		Usage: "edit an existing bookmark (rename or move)",
+		Name:      "edit",
+		Usage:     "rename or move a bookmark",
+		ArgsUsage: "<name>",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "name",
 				Aliases: []string{"n"},
-				Usage:   "the new name of the bookmark",
+				Usage:   "new bookmark name",
 			},
 			&cli.StringFlag{
 				Name:    "directory",
 				Aliases: []string{"d"},
-				Usage:   "the new bookmarked directory",
+				Usage:   "new directory",
 			},
 		},
 		Action: c.RunEditCommand,
@@ -30,7 +31,7 @@ func (c *CLI) NewEditCommand() *cli.Command {
 func (c *CLI) RunEditCommand(ctx context.Context, cmd *cli.Command) error {
 	name := cmd.Args().Get(0)
 	if name == "" {
-		return fmt.Errorf("no name specified")
+		return fmt.Errorf("no bookmark name specified (see cdbm edit --help)")
 	}
 	newName := cmd.String("name")
 	newDirectory := cmd.String("directory")
